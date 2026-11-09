@@ -1,0 +1,32 @@
+# --- Secrets & credentials: never commit these ---
+.streamlit/secrets.toml
+**/.streamlit/secrets.toml
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*.key
+rsa_key*
+credentials*.json
+*service_account*.json
+connections.toml
+.snowflake/
+.databrickscfg
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# --- Data & exports (kept out of the repo) ---
+*.csv
+*.zip
+*.parquet
+
+# --- OS / editor ---
+.DS_Store
+.vscode/
+.idea/
