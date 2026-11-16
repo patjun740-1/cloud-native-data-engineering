@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A7 · Sakila Stream Fleet · Medallion layers</title>
+<style>
+  :root{
+    --ink:#1d1d1f; --muted:#5b5b66; --line:#d9d9e0;
+    --src:#6b6b76;  --src-bg:#f3f3f5;
+    --bronze:#9a5b1e; --bronze-bg:#fbf1e6;
+    --silver:#4a5a6a; --silver-bg:#eef2f6;
+    --enr:#2e7d4f;  --enr-bg:#eaf6ef;
+    --gold:#a07800; --gold-bg:#fdf6dc;
+    --gate:#800000; --gate-bg:#fbecec;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#fff;color:var(--ink);font:13px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+  .wrap{width:1560px;margin:0 auto;padding:26px 28px 22px}
+  header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;border-bottom:2px solid var(--ink);padding-bottom:10px}
+  h1{font-size:22px;margin:0;letter-spacing:-.2px}
+  h1 small{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-top:3px}
+  .meta{text-align:right;color:var(--muted);font-size:12px}
+  .meta b{color:var(--ink)}
+
+  .flow{display:grid;grid-template-columns:200px 34px 255px 34px 265px 34px 255px 34px 265px 34px 150px;align-items:stretch}
+  .layer{border:1.5px solid var(--c);background:var(--bg);border-radius:10px;padding:10px 10px 8px;display:flex;flex-direction:column}
+  .layer h2{margin:0 0 2px;font-size:15px;color:var(--c);display:flex;justify-content:space-between;align-items:baseline}
+  .layer h2 span{font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .layer .what{font-size:11.5px;color:var(--muted);margin:0 0 8px}
+  .src{--c:var(--src);--bg:var(--src-bg)}
+  .bronze{--c:var(--bronze);--bg:var(--bronze-bg)}
+  .silver{--c:var(--silver);--bg:var(--silver-bg)}
+  .enr{--c:var(--enr);--bg:var(--enr-bg)}
+  .gold{--c:var(--gold);--bg:var(--gold-bg)}
+  .gate{--c:var(--gate);--bg:var(--gate-bg)}
+
+  .t{background:#fff;border:1px solid var(--line);border-radius:6px;padding:5px 7px;margin-bottom:5px}
+  .t .n{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;font-weight:600;display:flex;justify-content:space-between;gap:6px}
+  .t .n em{font-style:normal;color:var(--c);white-space:nowrap}
+  .t .d{font-size:11px;color:var(--muted);margin-top:1px}
+  .t .job{font-size:10px;color:#8a8a95;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .grp{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--c);margin:6px 0 3px}
+  .grp:first-of-type{margin-top:0}
+  .stream{border-left:3px solid #2f6fd6}
+  .scd{border-left:3px solid var(--enr)}
+  .fix{display:inline-block;background:#fff;border:1px solid #e3b5b5;color:var(--gate);border-radius:9px;font-size:9.5px;font-weight:600;padding:0 6px;margin-top:3px}
+
+  .arrow{display:flex;align-items:center;justify-content:center;position:relative}
+  .arrow::before{content:"";position:absolute;left:4px;right:9px;top:50%;height:2px;background:#9a9aa5}
+  .arrow::after{content:"";position:absolute;right:3px;top:calc(50% - 6px);border-left:9px solid #9a9aa5;border-top:7px solid transparent;border-bottom:7px solid transparent}
+
+  .steps{display:grid;grid-template-columns:200px 34px 255px 34px 265px 34px 255px 34px 265px 34px 150px;margin-top:10px}
+  .step{grid-column:span 2;padding:8px 10px;border-radius:8px;background:#fafafb;border:1px dashed #c9c9d2;font-size:11.5px;margin-right:6px}
+  .step b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink);margin-bottom:3px}
+  .step ul{margin:0;padding-left:15px}
+  .step li{margin:1px 0}
+  .blank{grid-column:span 1}
+
+  .gate .big{font-size:26px;font-weight:700;color:var(--gate);line-height:1}
+  .gate p{font-size:11.5px;margin:6px 0}
+  .legend{display:flex;gap:18px;margin-top:12px;font-size:11px;color:var(--muted);align-items:center;flex-wrap:wrap}
+  .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Sakila Stream Fleet · the medallion layers
+      <small>What the data is in each layer, and what the fifteen jobs do to it on the way (row counts after drop 8)</small></h1>
+    <div class="meta"><b>ADSP 31011 · Assignment 7 · EC2</b><br>Patrick Jun · Databricks Free Edition (serverless) · catalog <code>workspace</code></div>
+  </header>
+
+  <div class="flow">
+    <!-- SOURCES -->
+    <div class="layer src">
+      <h2>Sources <span>files</span></h2>
+      <p class="what">CSV files in the volume <code>a7_bronze/landing</code></p>
+      <div class="grp">Sakila history</div>
+      <div class="t"><div class="n">base/*.csv <em>11 files</em></div><div class="d">2005–06 Sakila tables</div></div>
+      <div class="grp">8 monthly drops · Mar–Oct 2006</div>
+      <div class="t stream"><div class="n">incoming/rentals</div><div class="d">POS rentals; retries sent twice; late returns re-sent; date format changes at drop 3</div></div>
+      <div class="t stream"><div class="n">incoming/payments</div><div class="d">POS payments, 15,000 per drop</div></div>
+      <div class="t"><div class="n">incoming/customers</div><div class="d">moves, store switches, closed accounts, email changes</div></div>
+      <div class="t"><div class="n">incoming/films</div><div class="d">price changes</div></div>
+      <div class="t"><div class="n">incoming/inventory</div><div class="d">copies moved to the other store</div></div>
+      <div class="t"><div class="n">control totals</div><div class="d">sent with every drop; what every CHECK compares to</div></div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- BRONZE -->
+    <div class="layer bronze">
+      <h2>Bronze <span>a7_bronze</span></h2>
+      <p class="what">Raw, as landed: every column a string, plus <code>_source_file</code> and <code>_ingested_at</code></p>
+      <div class="grp">History tables (Step 4)</div>
+      <div class="t"><div class="n">rental_raw <em>16,044</em></div><div class="d">payment_raw 16,049 · customer_raw 599 · inventory_raw 4,581 · film_raw 1,000</div></div>
+      <div class="t"><div class="n">lookups</div><div class="d">address 603 · city 600 · country 109 · film_category 1,000 · category 16 · store 2</div></div>
+      <div class="grp">Streamed (Structured Streaming)</div>
+      <div class="t stream"><div class="n">rental_stream <em>126,830</em></div><div class="d">append-only, exactly once per file (POS retries still in it)</div><div class="job">a4_stream_rentals</div><span class="fix">fixed: fixed checkpoint path</span> <span class="fix">fixed: serverless print</span></div>
+      <div class="t stream"><div class="n">payment_stream <em>120,000</em></div><div class="d">append-only, exactly once per file</div><div class="job">a5_stream_payments</div><span class="fix">fixed: serverless print</span></div>
+      <div class="t"><div class="n">control_totals <em>16 metrics</em></div><div class="d">replaced by each <code>land_next_drop()</code></div></div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- SILVER -->
+    <div class="layer silver">
+      <h2>Silver <span>a7_silver</span></h2>
+      <p class="what">Clean and typed, one row per key; dimensions show <b>today’s</b> version</p>
+      <div class="grp">Dimensions (wave 1)</div>
+      <div class="t"><div class="n">customers <em>599</em></div><div class="d">latest version + city and country</div><div class="job">a1_silver_customers</div><span class="fix">fixed: join on country_id</span></div>
+      <div class="t"><div class="n">films <em>1,000</em></div><div class="d">latest price + category</div><div class="job">a2_silver_films</div></div>
+      <div class="t"><div class="n">inventory <em>4,581</em></div><div class="d">each copy and the store that owns it today</div><div class="job">a3_silver_inventory</div></div>
+      <div class="grp">Facts (wave 3)</div>
+      <div class="t"><div class="n">rental <em>136,044</em></div><div class="d">history + MERGE of every streamed rental; 1,046 still out</div><div class="job">a6_silver_rentals</div><span class="fix">fixed: de-dup POS retries</span> <span class="fix">fixed: two date formats</span></div>
+      <div class="t"><div class="n">payment <em>136,049</em></div><div class="d">history + stream; amount as decimal; total $606,116.51</div><div class="job">a7_silver_payments</div><span class="fix">fixed: decimal(5,2)</span></div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- SILVER ENRICHED -->
+    <div class="layer enr">
+      <h2>Silver Enriched <span>a7_silver_enriched</span></h2>
+      <p class="what">Full history of every dimension as <b>SCD Type 2</b>: <code>version</code>, <code>valid_from</code>, <code>valid_to</code>, <code>is_current</code></p>
+      <div class="t scd"><div class="n">customers_scd2 <em>796</em></div><div class="d">599 customers; a new version when address, store or active changes (email is not tracked)</div><div class="job">e1_enriched_customers_scd2</div><span class="fix">fixed: track store_id</span></div>
+      <div class="t scd"><div class="n">films_scd2 <em>1,289</em></div><div class="d">1,000 films; a new version per price, duration or rating change</div><div class="job">e2_enriched_films_scd2</div><span class="fix">fixed: valid_to = day before next</span></div>
+      <div class="t scd"><div class="n">inventory_scd2 <em>5,303</em></div><div class="d">4,581 copies; a new version each time a copy moves store</div><div class="job">e3_enriched_inventory_scd2</div></div>
+      <div class="t" style="border-style:dashed"><div class="d" style="color:var(--ink)"><b>Rules the CHECKs test:</b> exactly one current version per key · no overlapping versions · the right number of versions</div></div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- GOLD -->
+    <div class="layer gold">
+      <h2>Gold <span>a7_gold</span></h2>
+      <p class="what">Business rollups and stories, built on Silver and Silver Enriched (wave 4)</p>
+      <div class="t"><div class="n">revenue_by_month_store <em>26</em></div><div class="d">payment → rental → copy → store; $606,106.56</div><div class="job">a8_gold_revenue_by_month_store</div><span class="fix">fixed: join on rental_id</span></div>
+      <div class="t"><div class="n">late_returns <em>64,707</em></div><div class="d">days out &gt; the film’s rental_duration</div><div class="job">a9_gold_late_returns</div><span class="fix">fixed: isNotNull()</span></div>
+      <div class="t"><div class="n">top_films <em>624</em></div><div class="d">top 3 films per category per month (16 × 13 × 3)</div><div class="job">a10_gold_top_films</div><span class="fix">fixed: partitionBy category, month</span></div>
+      <div class="t scd"><div class="n">customer_journeys <em>796</em></div><div class="d">one row per customer version: where they lived, which store, rentals and spend in that chapter; 136,044 rentals placed</div><div class="job">a12_gold_customer_journeys</div></div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- QUALITY GATE -->
+    <div class="layer gate">
+      <h2>Quality gate</h2>
+      <p class="what">a11_quality_gate (wave 5)</p>
+      <div class="big">15 / 15</div>
+      <p>green after every drop, on two runs each</p>
+      <p>Compares 13 table counts and 2 revenue totals with the control totals.</p>
+      <p>Red if any layer disagrees, so a bug in Bronze (a4’s duplicates) still turns the fleet red even when Silver hides it.</p>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step"><b>Land</b><ul><li>base CSVs → Delta tables</li><li>POS files → <code>readStream</code>, <code>availableNow</code>, one fixed checkpoint per stream</li></ul></div>
+    <div class="step"><b>Clean and type</b><ul><li>strings → int, decimal(5,2), timestamp (both POS formats)</li><li>de-duplicate by latest <code>last_update</code></li><li>MERGE late returns into the open rental</li><li>join city/country, category</li></ul></div>
+    <div class="step"><b>Keep history (SCD2)</b><ul><li>rebuild from Bronze + every change file</li><li>fingerprint the tracked columns; keep a row only when it changes</li><li><code>valid_to</code> = day before the next version</li></ul></div>
+    <div class="step"><b>Roll up and tell</b><ul><li>group by month and store</li><li>window rank within category and month</li><li>point-in-time join: rental date between <code>valid_from</code> and <code>valid_to</code></li></ul></div>
+    <div class="step" style="grid-column:span 3"><b>Verify</b><ul><li>every job’s CHECK cell vs the control totals</li><li>quality gate across all layers</li></ul></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="sw" style="background:#2f6fd6"></span>Structured Streaming</span>
+    <span><span class="sw" style="background:var(--enr)"></span>SCD Type 2 history and the journeys built on it</span>
+    <span><span class="fix" style="margin:0">fixed: …</span>&nbsp; one of the 10 planted breaks (or the extra serverless issue), fixed in that job</span>
+    <span>Row counts after drop 8, checked with <code>spark.table(t).count()</code> on every table</span>
+  </div>
+</div>
+</body>
+</html>
