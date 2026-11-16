@@ -75,7 +75,3 @@ All four are registered with MCP annotations `readOnlyHint: true` and `destructi
 - The intent parser is deterministic and covers a bounded set of phrasings; next I would add automated paraphrase and routing tests.
 - The Streamlit app calls the procedures through Snowpark, so it is not itself an MCP client. The MCP server registration and tool specification were verified directly in Snowflake.
 - Development used an administrative role. Production should use a least-privilege, read-only application role.
-
-## AI-use disclosure
-
-I used ChatGPT to help draft and troubleshoot the stored procedures, app routing, validation tests, and documentation, and Claude to review the SQL and app against the requirements, suggest harder adversarial prompts (including the 2006 false-premise test), add the false-premise and partial-coverage checks, and fix two statements that broke a full script run. I executed and verified every query in Snowflake, fixed the SCD2 customer-counting issue, kept only changes that passed retesting, and did not enable arbitrary SQL or fabricate answers.

@@ -123,8 +123,4 @@ My work:
 - The serverless `numInputRows = None` behaviour was worked around, not root-caused.
 - a7 and a8 were fixed in the same pass, so a8's inflated-revenue CHECK failure was never observed on its own; the cause is clear from the code.
 
-## AI-use disclosure
-
-I worked through this with Claude, which read the deploy notebook and the fleet's error report and explained the likely cause of each red job; I made every fix myself in Databricks and accepted it only when the CHECK went green. Claude was wrong several times and I corrected it: it predicted a4 and a5 would pass on the first run (they failed on the serverless `print`), doubted my correct answer of 3 cheaper films, and claimed two customer groups could not overlap (my notebook showed 34 distinct customers, not 35). I also used a Databricks **Genie** space over the Silver Enriched and Gold tables for three journey questions: its SQL was correct (including comparing each version with `version - 1`), but its written explanations claimed things the SQL never computed, so I accepted only the numbers that matched my own Spark results.
-
 User name and workspace host are redacted in the notebook outputs. The notebook's Step 9 cell still shows the original red-fleet report (errors only); later console cells show the final drop 8 runs, because Databricks keeps only each cell's last output.
